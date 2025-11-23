@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
@@ -8,7 +9,9 @@ class PatientApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Пациенты")
-        self.data_file = "patients.json"
+        
+        # Кросс-платформенный путь к файлу
+        self.data_file = os.path.join(os.path.dirname(__file__), "patients.json")
         self.patients = self.load_data()
         
         self.create_widgets()
@@ -18,9 +21,13 @@ class PatientApp:
         # Таблица пациентов
         columns = ("ФИО", "Возраст", "Пол", "Рост", "Вес", "ИМТ")
         self.tree = ttk.Treeview(self.root, columns=columns, show="headings")
+        
+        # Устанавливаем ширину колонок
         for col in columns:
             self.tree.heading(col, text=col)
-        self.tree.pack(fill=tk.BOTH, expand=True)
+            self.tree.column(col, width=100)
+        
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Фрейм с кнопками
         btn_frame = tk.Frame(self.root)
@@ -29,16 +36,24 @@ class PatientApp:
         tk.Button(btn_frame, text="Добавить", command=self.add_patient).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Редактировать", command=self.edit_patient).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Статистика", command=self.show_stats).pack(side=tk.LEFT, padx=2)
+        tk.Button(btn_frame, text="Удалить", command=self.delete_patient).pack(side=tk.LEFT, padx=2)
 
     def load_data(self):
-        if os.path.exists(self.data_file):
-            with open(self.data_file, 'r') as f:
-                return json.load(f)
-        return []
+        try:
+            if os.path.exists(self.data_file):
+                with open(self.data_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return []
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось загрузить данные: {e}")
+            return []
 
     def save_data(self):
-        with open(self.data_file, 'w') as f:
-            json.dump(self.patients, f, indent=2)
+        try:
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                json.dump(self.patients, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось сохранить данные: {e}")
 
     def calculate_bmi(self, weight, height):
         return round(weight / ((height / 100) ** 2), 2)
@@ -72,11 +87,22 @@ class PatientApp:
             return
         self.edit_patient_window(is_new=False, item=selected[0])
 
+    def delete_patient(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Ошибка", "Выберите пациента для удаления")
+            return
+        
+        if messagebox.askyesno("Подтверждение", "Удалить выбранного пациента?"):
+            idx = self.tree.index(selected[0])
+            self.patients.pop(idx)
+            self.save_data()
+            self.update_table()
+
     def edit_patient_window(self, is_new, item=None):
         window = tk.Toplevel(self.root)
         window.title("Добавить пациента" if is_new else "Редактировать пациента")
         
-        fields = {}
         entries = {}
         default_values = ["", "", "", "", ""]
         
@@ -117,7 +143,7 @@ class PatientApp:
                     self.patients[idx] = new_patient
                 
                 self.save_data()
-                self.update_table()  # Таблица автоматически пересортируется
+                self.update_table()
                 window.destroy()
             except ValueError:
                 messagebox.showerror("Ошибка", "Проверьте правильность введенных данных")
@@ -167,6 +193,14 @@ class PatientApp:
         plt.show()
 
 if __name__ == "__main__":
+    # Проверяем доступность matplotlib
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("Ошибка: Установите matplotlib: pip install matplotlib")
+        exit(1)
+    
     root = tk.Tk()
+    root.geometry("800x400")  # Фиксированный размер окна
     app = PatientApp(root)
     root.mainloop()

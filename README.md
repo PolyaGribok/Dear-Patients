@@ -16,6 +16,7 @@
 2.  **Поставьте зависимости:**
     ```bash
     pip install Pillow
+    pip install seaborn
     ```
     *Если не установится - скажите "Screw you guys, I'm going home!" и попробуйте ещё раз*
 

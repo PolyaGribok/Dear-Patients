@@ -1,9 +1,7 @@
-# Dear Patients - Стоматологическая прога (не сосёт!)
-
-![South Park Style](https://via.placeholder.com/800x400.png?text=OMG+It's+A+Dental+App+That+Doesn't+Suck!+%7C+Скриншот+главного+окна)
+# Dear Patients
 *Смотрите, мертвые! Это не очередной дурацкий софт!*
 
-## Ёкарный бабай, что это?!
+## Что это?!
 
 Это прога, которая НЕ заставит вас кричать "Oh my God, they killed Kenny!" каждый раз когда вы пытаетесь найти карточку пациента.
 
